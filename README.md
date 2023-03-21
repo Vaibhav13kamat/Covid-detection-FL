@@ -7,7 +7,7 @@ Final Year Project
 <br>python client2.py 9969</br>
 <br>python server.py 9969</br>
 
-<h4>FED_AVG ALgorithms</h4>
+<h3>FED_AVG ALgorithms</h3>
 In Federated Learning (FL), aggregation algorithms are used to combine the model updates from different devices or parties to create a global model. The choice of aggregation algorithm depends on various factors such as the nature of the data, the privacy requirements, and the performance goals of the FL system.
 
 For chest X-rays, there are several aggregation algorithms that could be used, such as:
