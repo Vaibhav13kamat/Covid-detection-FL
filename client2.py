@@ -4,27 +4,18 @@ import sys
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 from keras.applications.vgg19 import VGG19
 from keras.layers import Dense, Flatten
 from keras.models import Model
+from keras.preprocessing.image import ImageDataGenerator
 
 # Auxiliary methods
 def getDist(y):
     ax = sns.countplot(x=y)
     ax.set(title="Count of data classes")
     plt.show()
-
-def getData(dist, x, y):
-    dx = []
-    dy = []
-    counts = [0 for i in range(10)]
-    for i in range(len(x)):
-        if counts[y[i]]<dist[y[i]]:
-            dx.append(x[i])
-            dy.append(y[i])
-            counts[y[i]] += 1
-    return np.array(dx), np.array(dy)
 
 # Load and compile Keras model
 vgg = VGG19(weights='imagenet', include_top=False, input_shape=(112, 112, 3))
@@ -35,25 +26,21 @@ x = vgg.output
 x = Flatten()(x)
 x = Dense(128, activation='relu')(x)
 x = Dense(256, activation='relu')(x)
-predictions = Dense(10, activation='softmax')(x)
+predictions = Dense(2, activation='softmax')(x)  # change number of classes to 2 for covid and normal
 model = Model(inputs=vgg.input, outputs=predictions)
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 # Load dataset
-(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-x_train = np.repeat(np.expand_dims(x_train, axis=-1), 3, axis=-1)
-x_test = np.repeat(np.expand_dims(x_test, axis=-1), 3, axis=-1)
-x_train = tf.image.resize(x_train, (112, 112))
-x_test = tf.image.resize(x_test, (112, 112))
-dist = [0, 10, 10, 10, 1000, 500, 1000, 1000, 10, 4500]
-
-x_train, y_train = getData(dist, x_train, y_train)
-
-# Verify y_train contains multiple classes
-print(np.unique(y_train))
+train_dir = 'dataset_split/client2/train'
+test_dir = 'dataset_split/client2/test'
+batch_size = 32
+train_datagen = ImageDataGenerator(rescale=1./255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+test_datagen = ImageDataGenerator(rescale=1./255)
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(112, 112), batch_size=batch_size, class_mode='sparse')
+test_generator = test_datagen.flow_from_directory(test_dir, target_size=(112, 112), batch_size=batch_size, class_mode='sparse')
 
 # Visualize data distribution
-getDist(y_train)
+getDist(train_generator.classes)
 
 # Define Flower client
 class FlowerClient(fl.client.NumPyClient):
@@ -63,16 +50,16 @@ class FlowerClient(fl.client.NumPyClient):
 
     def fit(self, parameters, config):
         model.set_weights(parameters)
-        r = model.fit(x_train, y_train, epochs=1, validation_data=(x_test, y_test), verbose=0)
+        r = model.fit(train_generator, epochs=1, validation_data=test_generator, verbose=0)
         hist = r.history
         print("Fit history : " ,hist)
-        return model.get_weights(), len(x_train), {}
+        return model.get_weights(), train_generator.n, {}
 
     def evaluate(self, parameters, config):
         model.set_weights(parameters)
-        loss, accuracy = model.evaluate(x_test, y_test, verbose=0)
+        loss, accuracy = model.evaluate(test_generator, verbose=0)
         print("Eval accuracy : ", accuracy)
-        return loss, len(x_test), {"accuracy": accuracy}
+        return loss, test_generator.n, {"accuracy": accuracy}
 
 # Start Flower client
 fl.client.start_numpy_client(
@@ -80,7 +67,3 @@ fl.client.start_numpy_client(
         client=FlowerClient(), 
         grpc_max_message_length = 1024*1024*1024
 )
-
-
-
-

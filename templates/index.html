@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Image Viewer</title>
+  </head>
+  <body>
+    {% for image_name in image_names %}
+    <div>
+      <img src="{{ url_for('serve_image', image_name=image_name) }}" />
+      <p>{{ image_name }}</p>
+    </div>
+    {% endfor %}
+  </body>
+</html>
