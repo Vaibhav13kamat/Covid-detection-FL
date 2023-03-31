@@ -18,7 +18,7 @@ def getDist(y):
     plt.show()
 
 # Load and compile Keras model
-vgg = VGG19(weights='imagenet', include_top=False, input_shape=(112, 112, 3))
+vgg = VGG19(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 # Freeze first 10 layers
 for layer in vgg.layers[:10]:
     layer.trainable = False
@@ -31,13 +31,13 @@ model = Model(inputs=vgg.input, outputs=predictions)
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 # Load dataset
-train_dir = 'dataset_split/client1/train'
-test_dir = 'dataset_split/client1/test'
+train_dir = '/workspaces/Covid-detection-FL/dataset_split/client1/train'
+test_dir = '/workspaces/Covid-detection-FL/dataset_split/client1/test'
 batch_size = 32
 train_datagen = ImageDataGenerator(rescale=1./255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 test_datagen = ImageDataGenerator(rescale=1./255)
-train_generator = train_datagen.flow_from_directory(train_dir, target_size=(112, 112), batch_size=batch_size, class_mode='sparse')
-test_generator = test_datagen.flow_from_directory(test_dir, target_size=(112, 112), batch_size=batch_size, class_mode='sparse')
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(224, 224), batch_size=batch_size, class_mode='sparse')
+test_generator = test_datagen.flow_from_directory(test_dir, target_size=(224, 224), batch_size=batch_size, class_mode='sparse')
 
 # Visualize data distribution
 getDist(train_generator.classes)
