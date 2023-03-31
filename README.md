@@ -21,3 +21,26 @@ Secure Aggregation: This algorithm is designed to ensure the privacy of the mode
 Federated Exponentially Weighted Aggregation (FedEWA): This algorithm uses an exponential weighting scheme to give more weight to recent model updates. It is designed to improve the convergence speed of the FL system.
 
 The choice of aggregation algorithm for chest X-rays will depend on factors such as the number of devices or parties involved, the computational resources available, and the privacy requirements of the FL system. It is important to carefully consider these factors when selecting an aggregation algorithm to ensure that the FL system performs optimally while maintaining the privacy and security of the data.
+
+
+
+## Preprocessing
+
+- resized
+- normalized
+- gaussian blur
+- flipped
+- rotated
+
+
+
+
+
+## Insructions
+
+pip install -r requirements.txt
+
+chmod +x update.sh
+
+
+./update_dependencies.sh
