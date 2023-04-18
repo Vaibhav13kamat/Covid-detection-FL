@@ -31,7 +31,7 @@ def getDist(y):
     plt.show()
 
 # Load and compile Keras model
-vgg = VGG19(weights='client1_weights', include_top=include_top, input_shape=input_shape)      #called in the controller
+vgg = VGG19(weights=client1_weights, include_top=include_top, input_shape=input_shape)      #called in the controller
 # Freeze first 10 layers
 for layer in vgg.layers[:10]:
     layer.trainable = False

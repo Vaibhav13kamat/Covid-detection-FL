@@ -1,6 +1,5 @@
 #server twiks
 
-
 server_rounds=3
 server_grpc_max_message_length = 1024
 #server_address = 'localhost:'+str(sys.argv[1])  
@@ -22,3 +21,20 @@ client1_batch_size = 32
 client1_epochs=1
 client1_verbose=0
 client1_grpc_max_message_length=1024
+
+
+########################################################################
+
+#client2 twiks
+client2_weights='imagenet'
+include_top=False
+input_shape=(224, 224, 3)
+client2_number_of_classes=2
+
+#dataset_dirs
+client2_training_dir = '/workspaces/Covid-detection-FL/dataset_split/client2/train'
+client2_testing_dir = '/workspaces/Covid-detection-FL/dataset_split/client2/test'
+client2_batch_size = 32
+client2_epochs=1
+client2_verbose=0
+client2_grpc_max_message_length=1024

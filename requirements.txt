@@ -2,3 +2,4 @@ opencv-python
 flwr
 tensorflow
 flask
+opencv-python
