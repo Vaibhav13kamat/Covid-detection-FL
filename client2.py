@@ -11,6 +11,19 @@ from keras.layers import Dense, Flatten
 from keras.models import Model
 from keras.preprocessing.image import ImageDataGenerator
 
+#controller code
+from controller import client2_weights
+from controller import include_top
+from controller import input_shape
+from controller import client2_number_of_classes
+
+from controller import client2_training_dir
+from controller import client2_testing_dir
+from controller import client2_batch_size
+from controller import client2_epochs
+from controller import client2_verbose
+from controller import client2_grpc_max_message_length
+
 # Auxiliary methods
 def getDist(y):
     ax = sns.countplot(x=y)
@@ -18,7 +31,7 @@ def getDist(y):
     plt.show()
 
 # Load and compile Keras model
-vgg = VGG19(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+vgg = VGG19(weights=client2_weights, include_top=include_top, input_shape=input_shape)
 # Freeze first 10 layers
 for layer in vgg.layers[:10]:
     layer.trainable = False
@@ -26,14 +39,14 @@ x = vgg.output
 x = Flatten()(x)
 x = Dense(128, activation='relu')(x)
 x = Dense(256, activation='relu')(x)
-predictions = Dense(2, activation='softmax')(x)  # change number of classes to 2 for covid and normal
+predictions = Dense(client2_number_of_classes), activation='softmax')(x)  # change number of classes to 2 for covid and normal
 model = Model(inputs=vgg.input, outputs=predictions)
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 # Load dataset
-train_dir = '/workspaces/Covid-detection-FL/dataset_split/client2/train'
-test_dir = '/workspaces/Covid-detection-FL/dataset_split/client2/test'
-batch_size = 32
+train_dir = client2_training_dir
+test_dir =  client2_testing_dir
+batch_size = client2_batch_size
 train_datagen = ImageDataGenerator(rescale=1./255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 test_datagen = ImageDataGenerator(rescale=1./255)
 train_generator = train_datagen.flow_from_directory(train_dir, target_size=(224, 224), batch_size=batch_size, class_mode='sparse')
@@ -50,7 +63,7 @@ class FlowerClient(fl.client.NumPyClient):
 
     def fit(self, parameters, config):
         model.set_weights(parameters)
-        r = model.fit(train_generator, epochs=1, validation_data=test_generator, verbose=0)
+        r = model.fit(train_generator, epochs=client2_epochs, validation_data=test_generator, verbose=client2_verbose)
         hist = r.history
         print("Fit history : " ,hist)
         return model.get_weights(), train_generator.n, {}
@@ -63,7 +76,6 @@ class FlowerClient(fl.client.NumPyClient):
 
 # Start Flower client
 fl.client.start_numpy_client(
-        server_address="localhost:"+str(sys.argv[1]), 
+        server_address="localhost:"+str(sys.argv[1]), #not added in the controller
         client=FlowerClient(), 
-        grpc_max_message_length = 1024*1024*1024
-)
+        grpc_max_message_length = client2_grpc_max_message_length * grpc_max_message_length * grpc_max_message_length

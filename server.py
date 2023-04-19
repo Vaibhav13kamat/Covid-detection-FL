@@ -2,6 +2,17 @@ import flwr as fl
 import sys
 import numpy as np
 
+
+
+#controller code
+from controller import server_rounds
+from controller import server_grpc_max_message_length
+from controller import server_address
+
+
+
+#########################################################################
+
 class SaveModelStrategy(fl.server.strategy.FedAvg):
     def aggregate_fit(
         self,
@@ -21,8 +32,8 @@ strategy = SaveModelStrategy()
 
 # Start Flower server for three rounds of federated learning
 fl.server.start_server(
-        server_address = 'localhost:'+str(sys.argv[1]) , 
-        config=fl.server.ServerConfig(num_rounds=3) ,
-        grpc_max_message_length = 1024*1024*1024,
+        server_address =server_address , 
+        config=fl.server.ServerConfig(num_rounds=server_rounds) ,  
+        grpc_max_message_length = server_grpc_max_message_length *server_grpc_max_message_length*server_grpc_max_message_length ,
         strategy = strategy
 )
