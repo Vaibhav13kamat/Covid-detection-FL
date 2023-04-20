@@ -6,16 +6,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-from keras.applications.vgg19 import VGG19
-from keras.layers import Dense, Flatten
-from keras.models import Model
+#from keras.applications.vgg19 import VGG19
+#from keras.layers import Dense, Flatten
+#from keras.models import Model
 from keras.preprocessing.image import ImageDataGenerator
+
+from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.layers import Flatten, Dense
+from tensorflow.keras.models import Model
+
 
 #controller code
 from controller import client1_weights
 from controller import include_top
 from controller import input_shape
 from controller import client1_number_of_classes
+from controller import server_address
+
 
 from controller import client1_training_dir
 from controller import client1_testing_dir
@@ -31,16 +38,15 @@ def getDist(y):
     plt.show()
 
 # Load and compile Keras model
-vgg = VGG19(weights=client1_weights, include_top=include_top, input_shape=input_shape)      #called in the controller
-# Freeze first 10 layers
-for layer in vgg.layers[:10]:
+resnet = ResNet50(weights=client1_weights, include_top=False, input_shape=input_shape) # Load pre-trained ResNet50 model
+for layer in resnet.layers[:10]: # Freeze first 10 layers
     layer.trainable = False
-x = vgg.output
+x = resnet.output
 x = Flatten()(x)
 x = Dense(128, activation='relu')(x)
 x = Dense(256, activation='relu')(x)
-predictions = Dense(client1_number_of_classes, activation='softmax')(x)  # change number of classes to 2 for covid and normal  #called in controller
-model = Model(inputs=vgg.input, outputs=predictions)
+predictions = Dense(client1_number_of_classes, activation='softmax')(x) # Change number of classes to 2 for covid and normal
+model = Model(inputs=resnet.input, outputs=predictions)
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 # Load dataset
@@ -76,7 +82,7 @@ class FlowerClient(fl.client.NumPyClient):
 
 # Start Flower client
 fl.client.start_numpy_client(
-        server_address="localhost:"+str(sys.argv[1]),  #not added in controller
+        server_address=server_address, #not added in the controller
         client=FlowerClient(), 
         grpc_max_message_length = client1_grpc_max_message_length * client1_grpc_max_message_length * client1_grpc_max_message_length
 )
