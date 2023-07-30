@@ -33,9 +33,6 @@ The choice of aggregation algorithm for chest X-rays will depend on factors such
 - rotated
 
 
-
-
-
 ## Insructions
 
 pip install -r requirements.txt
@@ -44,3 +41,8 @@ chmod +x update.sh
 
 
 ./update_dependencies.sh
+
+
+
+
+THE LINK TO THE IMPLEMENTATION PART[https://github.com/Vaibhav13kamat/Fl_ui]
